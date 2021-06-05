@@ -1,10 +1,16 @@
 # MLPerf Benchmark Tool
 
-[MLPerf](https://mlcommons.org/en/) is a consortium of AI leaders from academia, research labs, and industry whose mission is to “build fair and useful benchmarks” that provide unbiased evaluations of training and inference performance for hardware, software, and services—all conducted under prescribed conditions.
+[MLPerf](https://mlcommons.org/en/) is a consortium of AI leaders from academia, research labs, and industry whose
+mission is to “build fair and useful benchmarks” that provide unbiased evaluations of training and inference
+performance for hardware, software, and services—all conducted under prescribed conditions.
 
-Adlik model optimizer, focusing on and running on specific hardware to achieve the purpose of acceleration, mainly consists of two categories of algorithm components, i.e. pruner and quantizer. The pruner includes various pruning algorithms,  can really reduce the number of parameters and flops. The quantizer focuses on 8-bit quantization that is easier to accelerate on specific hardware.
+Adlik model optimizer, focusing on and running on specific hardware to achieve the purpose of acceleration, mainly
+consists of two categories of algorithm components, i.e. pruner and quantizer. The pruner includes various pruning
+ algorithms,  can really reduce the number of parameters and flops. The quantizer focuses on 8-bit quantization
+ that is easier to accelerate on specific hardware.
 
-In this repository MLPerf is used to compare the performance of various pruning and quantization algorithm in Adlik model optimizer.
+In this repository MLPerf is used to compare the performance of various pruning and quantization algorithm in Adlik
+model optimizer.
 
 ## 1. Contents
 
@@ -43,7 +49,7 @@ Prepare the imagenet dataset:
 
 | dataset                   | download link                               |
 | ------------------------- | ------------------------------------------- |
-| imagenet2012 (validation) | http://image-net.org/challenges/LSVRC/2012/ |
+| imagenet2012 (validation) | <http://image-net.org/challenges/LSVRC/2012/> |
 
 Running the benchmark, following is a example with openvino backend :
 
