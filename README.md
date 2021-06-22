@@ -16,7 +16,7 @@ model optimizer.
 
 This repository provides the following:
 
-- Code that implements two backends so far, openvino and tvm, more will be provided in the future.
+- Code that implements two backends so far, OpenVINO and TVM, more will be provided in the future.
 - A Dockerfile which can be used to run the benchmark in a container.
 - Documentation on the dataset and  model.
 - A test result, based on a specific machine configuration.
@@ -51,7 +51,7 @@ Prepare the imagenet dataset:
 | ------------------------- | ------------------------------------------- |
 | imagenet2012 (validation) | <http://image-net.org/challenges/LSVRC/2012/> |
 
-Running the benchmark, following is a example with openvino backend :
+Running the benchmark, following is a example with OpenVINO backend :
 
 ```shell
 python3 main.py --dataset-path /data/imagenet2012 \
@@ -62,7 +62,8 @@ python3 main.py --dataset-path /data/imagenet2012 \
 
 ## 3. Results
 
-The test results of following  table are tested on the following machine configuration:
+The following table is the results of the inference test of the ResNet-50 model on the two backends of OpenVINO and TVM.
+The test results of following table are tested on the following machine configuration:
 
 - Intel(R) Xeon(R) Platinum 8260 CPU @ 2.40GHz.
 - Ubuntu 20.04, including docker.
@@ -70,11 +71,7 @@ The test results of following  table are tested on the following machine configu
 
 | Backend  | Pruning | Quantization | Latency(ms) |
 | -------- | ------- | ------------ | ----------- |
-| Openvino | ✗       | FP32         | 6.7         |
-| Openvino | ✓       | FP32         | 3.3         |
-| Openvino | ✗       | INT8         | 2.7         |
-| Openvino | ✓       | INT8         | 1.33        |
+| OpenVINO | ✗       | FP32         | 6.7         |
+| OpenVINO | ✓       | FP32         | 3.3         |
 | TVM      | ✗       | FP32         | 6.7         |
 | TVM      | ✓       | FP32         | 2.9         |
-| TVM      | ✗       | INT8         | -           |
-| TVM      | ✓       | INT8         | -           |
