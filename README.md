@@ -16,10 +16,10 @@ model optimizer.
 
 This repository provides the following:
 
-- Code that implements two backends so far, OpenVINO and TVM, more will be provided in the future.
-- A Dockerfile which can be used to run the benchmark in a container.
-- Documentation on the dataset and  model.
-- A test result, based on a specific machine configuration.
+- Code that implements two benckmark test cases so far, Resnet-50 and BERT, more will be provided in the future.
+- Dockerfiles which can be used to run the benchmark in a container.
+- Documentation on the dataset and model.
+- Test results, based on a specific machine configuration, including resnet50 and BERT testcases.
 
 ## 2. Running Benchmarks
 
@@ -37,7 +37,9 @@ CFLAGS="-std=c++14 -O3" python3 setup.py bdist_wheel
 pip3 install dist/mlperf_loadgen-*-linux_x86_64.whl
 ```
 
-Prepare the models to be test. first, change directory to the root of this repository,then get the optimized models.
+### For resnet50
+
+Prepare the models to be tested. first, change directory to the root of this repository,then get the optimized models.
 
 ```shell
 cd resnet50 && mkdir models && cd models
@@ -60,18 +62,56 @@ python3 main.py --dataset-path /data/imagenet2012 \
                 --time 600
 ```
 
+### For BERT
+
+Same as resnet50, prepare the model to be tested.
+
+```shell
+wget model_to_be_tested -O path_to_model
+```
+
+Then prepare the SQuAD dataset:
+
+| dataset                   | download link                               |
+| ------------------------- | ------------------------------------------- |
+| SQuAD v1.1 | <https://rajpurkar.github.io/SQuAD-explorer/dataset/dev-v1.1.json> |
+
+Finally run the benchmark test by command below:
+
+```shell
+source conf/setup_vars_offline.sh
+python3 run_bert_bench.py --batch-size=$BATCH_SIZE \
+                          --num-instance=$NUM_INSTANCE \
+                          --num-phy-cpus=$NUM_PHY_CPUS \
+                          --log-dir=$LOG_DIR \
+                          --batching=NaiveBucket \
+                          --mlperf-conf=conf/mlperf.conf \
+                          --user-conf=conf/user.conf \
+                          --path_to_model=path_to_model \
+                          --scenario=Offline
+```
+
 ## 3. Results
 
-The following table is the results of the inference test of the ResNet-50 model on the two backends of OpenVINO and TVM.
-The test results of following table are tested on the following machine configuration:
+The following table is the results of the inference benchmark tests, including ResNet-50 and BERT different backends, 
+while the machine configuration is as follows:
 
-- Intel(R) Xeon(R) Platinum 8260 CPU @ 2.40GHz.
+- Intel(R) Xeon(R) Platinum 8260 CPU @ 2.40GHz (2 Sockets).
 - Ubuntu 20.04, including docker.
 - Greater than 2T of disk (though many benchmarks do require less disk).
 
-| Backend  | Pruning | Quantization | Latency(ms) |
+### Resnet-50
+
+| Backend  | Pruning | Precision | Latency (ms) |
 | -------- | ------- | ------------ | ----------- |
 | OpenVINO | ✗       | FP32         | 6.7         |
 | OpenVINO | ✓       | FP32         | 3.3         |
 | TVM      | ✗       | FP32         | 6.7         |
 | TVM      | ✓       | FP32         | 2.9         |
+
+### BERT
+
+| Backend  |  Precision    | Samples Per Second |
+| -------- |  ------------ | ----------- |
+| TVM      | FP32          | 16.02       |
+| OpenVINO | FP32          | 11.43       |
