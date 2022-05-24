@@ -94,14 +94,22 @@ python3 run_xxx.py --batch-size=$BATCH_SIZE \
 
 ## 3. Results
 
-The inference benchmark tests, including ResNet-50 and BERT different backends, is running in a docker instance on Ubuntu 20.04, while the device information is as follows:
+The inference benchmark tests, including ResNet-50 and BERT different backends, is running in a
+docker instance on Ubuntu 20.04, while the device information is as follows:
 
 - Intel(R) Xeon(R) Platinum 8260 CPU @ 2.40GHz (2 Sockets).
 - Greater than 2T of disk (though many benchmarks do require less disk).
 
-Intel(R) Xeon(R) Platinum 8260 is a 64-bit 24-core x86 high-performance server microprocessor introduced by Intel in 2019. It's based on Cascadelake microarchitecture and is manufactured on a 14 nm process. The chip supports 8-way multiprocessing, sports 2 AVX-512 FMA units as well as three Ultra Path Interconnect links.
+Intel(R) Xeon(R) Platinum 8260 is a 64-bit 24-core x86 high-performance server microprocessor
+introduced by Intel in 2019. It's based on Cascadelake microarchitecture and is manufactured on a
+14 nm process. The chip supports 8-way multiprocessing, sports 2 AVX-512 FMA units as well as three
+Ultra Path Interconnect links.
 
-In practice, our benchmark is running on a ZXCloud R5300 G4 Server, which is ZTE’s new generation 2U 2-socket rack server, integrating 2 Intel(R) Xeon(R) Platinum 8260. R5300 G4 uses high-density and modular design, providing high performance, high reliability, high scalability, easy management and other features, widely applicable to Internet, cloud computing, big data, NFV, SDN and other fields.
+In practice, our benchmark is running on a ZXCloud R5300 G4 Server,
+which is ZTE’s new generation 2U 2-socket rack server, integrating 2 Intel(R) Xeon(R) Platinum 8260.
+R5300 G4 uses high-density and modular design, providing high performance, high reliability,
+high scalability, easy management and other features, widely applicable to Internet,
+cloud computing, big data, NFV, SDN and other fields.
 
 The benchmark results are summarized in the table below. All the testcases are running on 48 physical cores.
 
@@ -121,4 +129,3 @@ The benchmark results are summarized in the table below. All the testcases are r
 | TVM      | FP32          | 16.02       |
 | OpenVINO | FP32          | 11.43       |
 | OnnxRuntime | FP32       | 11.28       |
-
