@@ -48,11 +48,12 @@ class BackendOpenvino(backend.Backend):
         ie_loaded = ie.read_network(model=model_path, weights=model_path.replace('.xml', '.bin'))
         self.model = ie.load_network(ie_loaded, "CPU")
         self.counter = 0
+
         # find inputs from the model if not passed in by config
         if inputs:
             self.inputs = inputs
         else:
-            self.inputs = [next(iter(self.model.input_info))]
+            self.inputs = [input_name.any_name for _, input_name in enumerate(self.model.inputs)]
 
         self.expected_batch_size = int(self.model.input_info[self.inputs[0]].input_data.shape[0])
 
@@ -60,9 +61,10 @@ class BackendOpenvino(backend.Backend):
         if outputs:
             self.outputs = outputs
         else:
-            self.outputs = next(iter(self.model.outputs))
-
-        return self
+            self.outputs = [
+                output_name.any_name for _, output_name in enumerate(self.model.outputs)
+            ]
+        return self 
 
     @ staticmethod
     def unzip_checkpoint_into_xml_and_bin(checkpoint_file):
@@ -79,15 +81,18 @@ class BackendOpenvino(backend.Backend):
 
     def predict(self, feed):
 
+        results = []
         batch_shape = feed[self.inputs[0]].shape
+
         if batch_shape[0] < self.expected_batch_size:
             pad = self.expected_batch_size - batch_shape[0]
-            feed[self.inputs[0]] = np.concatenate([feed[self.inputs[0]], np.zeros(shape=(pad, *batch_shape[1:]))], axis=0)
-            # print('PADDING:', pad)
-        res = self.model.infer(feed)
-        res = res.values()
-        res = list(res)[0]
-        if batch_shape[0] < self.expected_batch_size:
-            res = res[:batch_shape[0]]
-            # print('DE-PADDING:', batch_shape[0])
-        return [res]
+            feed[self.inputs[0]] = np.concatenate(
+                [feed[self.inputs[0]], np.zeros(shape=(pad, *batch_shape[1:]))], axis=0
+            )
+
+        self.model.infer(feed)
+        for _, name in enumerate(self.outputs):
+            res = self.model.get_tensor(name).data
+            results.append(res)
+
+        return results

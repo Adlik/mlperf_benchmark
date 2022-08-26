@@ -8,6 +8,8 @@ import logging
 import sys
 import time
 
+import torchvision.transforms.functional as F
+import torch
 import cv2
 import numpy as np
 from PIL import Image
@@ -298,4 +300,62 @@ def pre_process_coco_resnet34_tf(img, dims=None, need_transpose=False):
     if need_transpose:
         img = img.transpose([2, 0, 1])
 
+    return img
+
+
+def letterbox(img, new_shape=(640, 640), color=(114, 114, 114)):
+    """Resize and pad image"""
+    shape = img.shape[:2]
+    if isinstance(new_shape, int):
+        new_shape = (new_shape, new_shape)
+
+    # Scale ratio (new / old)
+    ratio = min(new_shape[0] / shape[0], new_shape[1] / shape[1])
+
+    # Compute padding
+    new_unpad = int(round(shape[1] * ratio)), int(round(shape[0] * ratio))
+    dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - new_unpad[1]
+
+    dw /= 2
+    dh /= 2
+
+    if shape[::-1] != new_unpad:
+        img = cv2.resize(img, new_unpad, interpolation=cv2.INTER_LINEAR)
+    top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
+    left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
+    img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
+    return img
+
+
+def pre_process_coco_yolov5(img, dims=None, need_transpose=False):
+    """Coco dataset pre-processing"""
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = letterbox(img, new_shape=dims[0])
+    img = F.to_tensor(img)
+    if not need_transpose:
+        img = img.permute(2, 0, 1)  
+    img = np.asarray(img, dtype='float32')
+    return img
+
+
+def pre_process_coco_maskrcnn(img, dims=None, need_transpose=False, to_bgr255=True):
+    """Coco dataset pre-processing"""
+    # img_ori: BGR, NHWC
+    # print("="*100)
+    img =cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = Image.fromarray(img)
+    # resize
+    img = F.resize(img, (dims[0], dims[1]), Image.BILINEAR)
+    # to_tensor
+    img = np.asarray(img, dtype='float32')
+    img = torch.tensor(img)
+
+    if need_transpose:
+        img = img.permute(2, 0, 1)  
+
+    # normalize
+    if to_bgr255:
+        img = F.normalize(img, mean=[102.9801, 115.9465, 122.7717], std=[1., 1., 1.])
+
+    img = np.asarray(img, dtype='float32')
     return img
