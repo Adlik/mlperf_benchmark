@@ -20,8 +20,11 @@ from queue import Queue
 import mlperf_loadgen as lg
 import numpy as np
 
+import coco
 import dataset
 import imagenet
+import coco_yolov5
+import coco_maskrcnn
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("main")
 
@@ -42,6 +45,23 @@ SUPPORTED_DATASETS = {
     "imagenet_torch":
         (imagenet.Imagenet, dataset.pre_process_imagenet_pytorch, dataset.PostProcessArgMax(offset=0),
          {"image_size": [224, 224, 3]}),
+
+    "coco_yolov5": (
+        coco.Coco,
+        dataset.pre_process_coco_yolov5,
+        coco_yolov5.PostProcessCocoPt(0.05),
+        {
+            "image_size": [640, 640, 3]
+        },
+    ),
+    "coco_maskrcnn": (
+        coco.Coco,
+        dataset.pre_process_coco_maskrcnn,
+        coco_maskrcnn.PostProcessCocoPt("/data/coco/annotations/instances_val2017.json"),
+        {
+            "image_size": [800, 800, 3]
+        },
+    ),    
 }
 
 # pre-defined command line options so simplify things. They are used as defaults and can be
@@ -72,6 +92,17 @@ SUPPORTED_PROFILES = {
         "data-format": "NCHW",
         "cache": 0,
         "max-batchsize": 32,
+    },
+    "coco-yolov5-openvino": {
+        "dataset": "coco_yolov5",
+        "backend": "openvino",
+        "max-batchsize": 1,
+    },
+    "coco-maskrcnn-openvino": {
+        "dataset": "coco_maskrcnn",
+        "backend": "openvino",
+        "data-format": "NHWC",
+        "max-batchsize": 1,
     },
     ######## TVM MODELS ########
     "model1-tvm": {

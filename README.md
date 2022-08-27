@@ -16,7 +16,8 @@ model optimizer.
 
 This repository provides the following:
 
-- Code that implements two benckmark test cases so far, Resnet-50 and BERT, more will be provided in the future.
+- Code that implements four benckmark test cases so far, Resnet-50, BERT, Yolo-v5, and MaskRcnn,
+  other models will be provided in the future.
 - Dockerfiles which can be used to run the benchmark in a container.
 - Documentation on the dataset and model.
 - Test results, based on a specific machine configuration, including resnet50 and BERT testcases.
@@ -37,20 +38,20 @@ CFLAGS="-std=c++14 -O3" python3 setup.py bdist_wheel
 pip3 install dist/mlperf_loadgen-*-linux_x86_64.whl
 ```
 
-### For resnet50
+### For ResNet50
 
 Prepare the models to be tested. first, change directory to the root of this repository,then get the optimized models.
 
 ```shell
-cd resnet50 && mkdir models && cd models
+cd cnns && mkdir models && cd models
 wget ...
 cd ..
 ```
 
 Prepare the imagenet dataset:
 
-| dataset                   | download link                               |
-| ------------------------- | ------------------------------------------- |
+| dataset                   | download link                                 |
+| ------------------------- | --------------------------------------------- |
 | imagenet2012 (validation) | <http://image-net.org/challenges/LSVRC/2012/> |
 
 Running the benchmark, following is a example with OpenVINO backend :
@@ -62,7 +63,7 @@ python3 main.py --dataset-path /data/imagenet2012 \
                 --time 600
 ```
 
-### For BERT
+### For Bert
 
 Same as resnet50, prepare the model to be tested.
 
@@ -72,8 +73,8 @@ wget model_to_be_tested -O path_to_model
 
 Then prepare the SQuAD dataset:
 
-| dataset                   | download link                               |
-| ------------------------- | ------------------------------------------- |
+| dataset    | download link                                                      |
+| ---------- | ------------------------------------------------------------------ |
 | SQuAD v1.1 | <https://rajpurkar.github.io/SQuAD-explorer/dataset/dev-v1.1.json> |
 
 Finally run the benchmark test by command below:
@@ -92,9 +93,34 @@ python3 run_xxx.py --batch-size=$BATCH_SIZE \
                           --scenario=Offline
 ```
 
+### For Yolo-v5 and MaskRcnn
+
+Same as resnet-50, prepare the model to be tested. We used yolov5m and mask_rcnn_R_50_FPN_1x in results 3.2.
+
+```shell
+wget model_to_be_tested -O path_to_model
+```
+
+Then prepare the coco dataset:
+
+| dataset      | download link                       |
+| ------------ | ----------------------------------- |
+| coco val2017 | <https://cocodataset.org/#download> |
+
+```shell
+python3 main.py --dataset-path /data/coco \
+                --model models/$model \
+                --profile coco-$model_type-openvino \
+                --time 600 \
+                --scenario SingleStream \
+                (--accuracy)
+```
+
 ## 3. Results
 
-The inference benchmark tests, including ResNet-50 and BERT different backends, is running in a
+### 3.1 Part 1
+
+The inference benchmark tests, including ResNet50 and BERT different backends, is running in a
 docker instance on Ubuntu 20.04, while the device information is as follows:
 
 - Intel(R) Xeon(R) Platinum 8260 CPU @ 2.40GHz (2 Sockets).
@@ -113,19 +139,54 @@ cloud computing, big data, NFV, SDN and other fields.
 
 The benchmark results are summarized in the table below. All the testcases are running on 48 physical cores.
 
-### Resnet-50
+#### Resnet50
 
 | Backend  | Pruning | Precision | Latency (ms) |
-| -------- | ------- | ------------ | ----------- |
-| OpenVINO | ✗       | FP32         | 6.7         |
-| OpenVINO | ✓       | FP32         | 3.3         |
-| TVM      | ✗       | FP32         | 6.7         |
-| TVM      | ✓       | FP32         | 2.9         |
+| -------- | ------- | --------- | ------------ |
+| OpenVINO | ✗       | FP32      | 6.7          |
+| OpenVINO | ✓       | FP32      | 3.3          |
+| TVM      | ✗       | FP32      | 6.7          |
+| TVM      | ✓       | FP32      | 2.9          |
 
-### BERT (Detailed log in bert/mlperf_log/)
+#### Bert (Detailed log in bert/mlperf_log/)
 
-| Backend  |  Precision    | Samples Per Second |
-| -------- |  ------------ | ----------- |
-| TVM      | FP32          | 16.02       |
-| OpenVINO | FP32          | 11.43       |
-| OnnxRuntime | FP32       | 11.28       |
+| Backend     | Precision | Samples Per Second |
+| ----------- | --------- | ------------------ |
+| TVM         | FP32      | 16.02              |
+| OpenVINO    | FP32      | 11.43              |
+| OnnxRuntime | FP32      | 11.28              |
+
+### 3.2 Part 2
+
+The inference benchmark runs with openvino backend, including ResNet-50, Yolo-v5 and MaskRcnn
+which are running in a docker instance, while the device information is as follows:
+
+- Intel(R) Xeon(R) Platinum 8378C CPU @ 2.80GHz (2 Sockets)
+- Greater than 2T of disk
+
+Intel(R) Xeon(R) Platinum 8378C is a 64-bit 38-core x86 high-performance server microprocessor
+introduced by Intel in 2021. It's based on Icelake microarchitecture and is manufactured on a
+10 nm process.
+
+#### Resnet-50
+
+| Backend  | Pruning | Type | Latency (ms) | Acc(%) |
+| -------- | ------- | ---- | ------------ | ------ |
+| OpenVINO | ✗       | FP32 | 4.3          | 76.1   |
+| OpenVINO | ✗       | INT8 | 2.0          | 75.9   |
+| OpenVINO | ✓       | INT8 | 1.7          | 75.7   |
+
+#### Yolo-v5
+
+| Backend  | Pruning | Type | Latency (ms) | mAP@.5 / mAP@.5:.95 |
+| -------- | ------- | ---- | ------------ | ------------------- |
+| OpenVINO | ✗       | FP32 | 18.7         | 63.9 / 44.8         |
+| OpenVINO | ✗       | INT8 | 7.5          | 63.7 / 44.4         |
+| OpenVINO | ✓       | INT8 | 7.1          | 59.6 / 39.9         |
+
+#### MaskRcnn
+
+| Backend  | Pruning | Type | Latency (ms) | mAP@.5 / mAP@.5:.95 (box) | mAP@.5 / mAP@.5:.95 (mask) |
+| -------- | ------- | ---- | ------------ | ------------------------- | -------------------------- |
+| OpenVINO | ✗       | FP32 | 133.1        | 55.0 / 34.6               | 51.7 / 31.2                |
+| OpenVINO | ✗       | INT8 | 89.5         | 55.0 / 34.6               | 51.7 / 31.2                |
